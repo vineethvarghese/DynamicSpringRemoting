@@ -6,6 +6,7 @@
 
     <groupId>DynamicSpringRemoting</groupId>
     <artifactId>DynamicSpringRemoting</artifactId>
+    <packaging>jar</packaging>
     <version>1.0</version>
 
 
