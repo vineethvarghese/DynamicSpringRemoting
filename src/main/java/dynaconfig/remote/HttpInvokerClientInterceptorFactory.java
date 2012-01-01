@@ -24,6 +24,7 @@ public class HttpInvokerClientInterceptorFactory
 
     private static final Logger logger = LoggerFactory.getLogger(HttpInvokerClientInterceptorFactory.class);
 
+    private final HttpRemoteServiceConfiguration defaultConfiguration = new HttpRemoteServiceConfiguration();
 
     @Override
     public MethodInterceptor createMethodInterceptor(HttpRemoteServiceConfiguration configuration) {
@@ -39,12 +40,17 @@ public class HttpInvokerClientInterceptorFactory
 
     @Override
     public HttpRemoteServiceConfiguration defaultConfiguration() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return defaultConfiguration;
     }
 
     @Override
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.beanClassLoader = classLoader;
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return this.beanClassLoader;
     }
 
     public RemoteInvocationFactory getRemoteInvocationFactory() {
@@ -65,5 +71,9 @@ public class HttpInvokerClientInterceptorFactory
             throw new IllegalArgumentException("'serviceInterface' must be an interface");
         }
         this.serviceInterface = serviceInterface;
+    }
+
+      public void setServiceUrl(String serviceUrl) {
+        this.defaultConfiguration.setServiceUrl(serviceUrl);
     }
 }
