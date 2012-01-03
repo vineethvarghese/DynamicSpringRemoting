@@ -26,7 +26,7 @@ public class ReconfigurableObjectMethodInterceptor implements MethodInterceptor 
     public ReconfigurableObjectMethodInterceptor(MethodInterceptorFactory methodInterceptorFactory) {
         this.methodInterceptorFactory = methodInterceptorFactory;
         this.lastKnownConfiguration = methodInterceptorFactory.defaultConfiguration();
-        this.proxyTarget = methodInterceptorFactory.createMethodInterceptor(lastKnownConfiguration);
+        createProxyTarget();
     }
 
     @Override
@@ -47,20 +47,25 @@ public class ReconfigurableObjectMethodInterceptor implements MethodInterceptor 
         /**
          * Since the configuration update and proxyTarget update is not atomic, there is a chance for inconsistency here.
          */
-        if (configuration != null) {
+        if (configuration != null && configuration.isValid()) {
             if (!(configuration.equals(lastKnownConfiguration))
                     && lastKnownConfiguration.getClass().isAssignableFrom(configuration.getClass())) {
                 logger.debug("Received updated configuration {}. Replacing target proxy.", configuration);
                 lastKnownConfiguration = configuration;
-                final MethodInterceptor methodInterceptor = methodInterceptorFactory.createMethodInterceptor(lastKnownConfiguration);
-                proxyTarget = new ProxyFactory(methodInterceptorFactory.getServiceInterface(), methodInterceptor)
-                        .getProxy(methodInterceptorFactory.getClassLoader());
+                createProxyTarget();
             } else {
-                logger.debug("Received a configuration object that is equal to the previous configuration object or not of assignable type");
+                logger.debug("Received a configuration object {} that is equal to the previous configuration object {} or not of assignable type",
+                        configuration, lastKnownConfiguration);
             }
         } else {
-            logger.debug("Received null as the configuration. So, using the old target proxy");
+            logger.debug("Received configuration {} is null or not valid. So, using the old target proxy", configuration);
         }
+    }
+
+    void createProxyTarget() {
+        final MethodInterceptor methodInterceptor = methodInterceptorFactory.createMethodInterceptor(lastKnownConfiguration);
+        proxyTarget = new ProxyFactory(methodInterceptorFactory.getServiceInterface(), methodInterceptor)
+                .getProxy(methodInterceptorFactory.getClassLoader());
     }
 
 }
